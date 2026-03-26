@@ -2,22 +2,19 @@ import React, { useEffect } from "react";
 import { TextInput, Accordion, AccordionHeader, AccordionBody } from "@tremor/react";
 import { Button as Button2, Modal, Form, InputNumber, Select } from "antd";
 import { budgetUpdateCall } from "../networking";
-import { budgetItem } from "./budget_panel";
 import NotificationsManager from "../molecules/notifications_manager";
 
 interface BudgetModalProps {
   isModalVisible: boolean;
   accessToken: string | null;
   setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setBudgetList: React.Dispatch<React.SetStateAction<any[]>>;
-  existingBudget: budgetItem;
+  existingBudget: Record<string, any>;
   handleUpdateCall: () => void;
 }
 const EditBudgetModal: React.FC<BudgetModalProps> = ({
   isModalVisible,
   accessToken,
   setIsModalVisible,
-  setBudgetList,
   existingBudget,
   handleUpdateCall,
 }) => {
@@ -44,15 +41,14 @@ const EditBudgetModal: React.FC<BudgetModalProps> = ({
     }
     try {
       NotificationsManager.info("Making API Call");
-      setIsModalVisible(true);
-      const response = await budgetUpdateCall(accessToken, formValues);
-      setBudgetList((prevData) => (prevData ? [...prevData, response] : [response])); // Check if prevData is null
+      await budgetUpdateCall(accessToken, formValues);
       NotificationsManager.success("Budget Updated");
       form.resetFields();
+      setIsModalVisible(false);
       handleUpdateCall();
     } catch (error) {
-      console.error("Error creating the key:", error);
-      NotificationsManager.fromBackend(`Error creating the key: ${error}`);
+      console.error("Error updating the budget:", error);
+      NotificationsManager.fromBackend(`Error updating the budget: ${error}`);
     }
   };
 
@@ -77,15 +73,9 @@ const EditBudgetModal: React.FC<BudgetModalProps> = ({
           <Form.Item
             label="Budget ID"
             name="budget_id"
-            rules={[
-              {
-                required: true,
-                message: "Please input a human-friendly name for the budget",
-              },
-            ]}
-            help="A human-friendly name for the budget"
+            help="Budget ID cannot be changed after creation"
           >
-            <TextInput placeholder="" />
+            <TextInput placeholder="" disabled={true} />
           </Form.Item>
           <Form.Item label="Max Tokens per minute" name="tpm_limit" help="Default is model limit.">
             <InputNumber step={1} precision={2} width={200} />

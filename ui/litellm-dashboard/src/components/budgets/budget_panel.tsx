@@ -123,14 +123,13 @@ const BudgetPanel: React.FC<BudgetSettingsPageProps> = ({ accessToken }) => {
                 accessToken={accessToken}
                 isModalVisible={isCreateModelVisible}
                 setIsModalVisible={setIsCreateModelVisible}
-                setBudgetList={setBudgetList}
+                handleUpdateCall={handleUpdateCall}
               />
               {selectedBudget && (
                 <EditBudgetModal
                   accessToken={accessToken}
                   isModalVisible={isEditModalVisible}
                   setIsModalVisible={setIsEditModalVisible}
-                  setBudgetList={setBudgetList}
                   existingBudget={selectedBudget}
                   handleUpdateCall={handleUpdateCall}
                 />
@@ -149,8 +148,9 @@ const BudgetPanel: React.FC<BudgetSettingsPageProps> = ({ accessToken }) => {
 
                   <TableBody>
                     {budgetList
-                      .slice() // Creates a shallow copy to avoid mutating the original array
-                      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()) // Sort by updated_at in descending order
+                      .filter((item): item is budgetItem => item != null)
+                      .slice()
+                      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
                       .map((value: budgetItem, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{value.budget_id}</TableCell>

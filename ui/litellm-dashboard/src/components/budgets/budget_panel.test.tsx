@@ -101,6 +101,26 @@ describe("Budget Panel", () => {
     });
   });
 
+  it("should handle null entries in budget list without crashing", async () => {
+    vi.mocked(networking.getBudgetList).mockResolvedValue([
+      {
+        budget_id: "budget-1",
+        max_budget: "100",
+        rpm_limit: 10,
+        tpm_limit: 1000,
+        updated_at: "2024-01-01T00:00:00Z",
+      },
+      null,
+      undefined,
+    ]);
+
+    render(<BudgetPanel accessToken="token-123" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("budget-1")).toBeInTheDocument();
+    });
+  });
+
   it("should handle delete error", async () => {
     vi.mocked(networking.getBudgetList).mockResolvedValue([
       {
