@@ -1,17 +1,17 @@
 import React from "react";
 import { TextInput, Accordion, AccordionHeader, AccordionBody } from "@tremor/react";
 import { Button as Button2, Modal, Form, InputNumber, Select } from "antd";
-import { budgetCreateCall } from "../networking";
+import { useCreateBudget } from "@/app/(dashboard)/hooks/budgets/useBudgets";
 import NotificationsManager from "../molecules/notifications_manager";
 
 interface BudgetModalProps {
   isModalVisible: boolean;
-  accessToken: string | null;
   setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  handleUpdateCall: () => void;
 }
-const BudgetModal: React.FC<BudgetModalProps> = ({ isModalVisible, accessToken, setIsModalVisible, handleUpdateCall }) => {
+const BudgetModal: React.FC<BudgetModalProps> = ({ isModalVisible, setIsModalVisible }) => {
   const [form] = Form.useForm();
+  const createBudget = useCreateBudget();
+
   const handleOk = () => {
     setIsModalVisible(false);
     form.resetFields();
@@ -23,20 +23,15 @@ const BudgetModal: React.FC<BudgetModalProps> = ({ isModalVisible, accessToken, 
   };
 
   const handleCreate = async (formValues: Record<string, any>) => {
-    if (accessToken == null || accessToken == undefined) {
-      return;
-    }
     try {
       NotificationsManager.info("Making API Call");
-      // setIsModalVisible(true);
-      await budgetCreateCall(accessToken, formValues);
+      await createBudget.mutateAsync(formValues);
       NotificationsManager.success("Budget Created");
       form.resetFields();
       setIsModalVisible(false);
-      handleUpdateCall();
     } catch (error) {
-      console.error("Error creating the key:", error);
-      NotificationsManager.fromBackend(`Error creating the key: ${error}`);
+      console.error("Error creating the budget:", error);
+      NotificationsManager.fromBackend(`Error creating the budget: ${error}`);
     }
   };
 

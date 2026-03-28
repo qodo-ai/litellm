@@ -1,25 +1,22 @@
 import React, { useEffect } from "react";
 import { TextInput, Accordion, AccordionHeader, AccordionBody } from "@tremor/react";
 import { Button as Button2, Modal, Form, InputNumber, Select } from "antd";
-import { budgetUpdateCall } from "../networking";
+import { useUpdateBudget } from "@/app/(dashboard)/hooks/budgets/useBudgets";
+import { budgetItem } from "./budget_panel";
 import NotificationsManager from "../molecules/notifications_manager";
 
-interface BudgetModalProps {
+interface EditBudgetModalProps {
   isModalVisible: boolean;
-  accessToken: string | null;
   setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  existingBudget: Record<string, any>;
-  handleUpdateCall: () => void;
+  existingBudget: budgetItem;
 }
-const EditBudgetModal: React.FC<BudgetModalProps> = ({
+const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
   isModalVisible,
-  accessToken,
   setIsModalVisible,
   existingBudget,
-  handleUpdateCall,
 }) => {
-  console.log("existingBudget", existingBudget);
   const [form] = Form.useForm();
+  const updateBudget = useUpdateBudget();
 
   useEffect(() => {
     form.setFieldsValue(existingBudget);
@@ -35,17 +32,13 @@ const EditBudgetModal: React.FC<BudgetModalProps> = ({
     form.resetFields();
   };
 
-  const handleCreate = async (formValues: Record<string, any>) => {
-    if (accessToken == null || accessToken == undefined) {
-      return;
-    }
+  const handleUpdate = async (formValues: Record<string, any>) => {
     try {
       NotificationsManager.info("Making API Call");
-      await budgetUpdateCall(accessToken, formValues);
+      await updateBudget.mutateAsync(formValues);
       NotificationsManager.success("Budget Updated");
       form.resetFields();
       setIsModalVisible(false);
-      handleUpdateCall();
     } catch (error) {
       console.error("Error updating the budget:", error);
       NotificationsManager.fromBackend(`Error updating the budget: ${error}`);
@@ -63,7 +56,7 @@ const EditBudgetModal: React.FC<BudgetModalProps> = ({
     >
       <Form
         form={form}
-        onFinish={handleCreate}
+        onFinish={handleUpdate}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
         labelAlign="left"
